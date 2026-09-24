@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Totem Hotel IA</title>
+<!-- Biblioteca de Ícones (FontAwesome) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+/* Variáveis de cores para facilitar o Tema Escuro */
+:root {
+--bg-main: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+--panel-bg: white;
+--text-main: #1e293b;
+--text-sub: #475569;
+--border-color: #cbd5e1;
+--info-bg: white;
+--info-border: #e2e8f0;
+--btn-menu-bg: #0284c7;
+--btn-menu-hover: #0369a1;
+--header-text: #0f172a;
+--input-bg: white;
+}
+/* Classe do Tema Escuro */
+.dark-theme {
+--bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+--panel-bg: #1e293b;
+--text-main: #f8fafc;
+--text-sub: #94a3b8;
+--border-color: #334155;
+--info-bg: #0f172a;
+--info-border: #334155;
+--btn-menu-bg: #1e293b;
+--btn-menu-hover: #334155;
+--header-text: #f8fafc;
+--input-bg: #1e293b;
+}
+{ box-sizing: border-box; margin: 0; padding: 0; }
+body {
+font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+background: var(--bg-main);
+color: var(--text-main);
+min-height: 100vh;
+overflow-x: hidden;
+transition: background 0.3s ease, color 0.3s ease;
+}
+/* --- BARRA DE ACESSIBILIDADE --- */
+.a11y-bar {
+position: fixed;
+top: 20px;
+right: 20px;
+display: flex;
+gap: 15px;
+z-index: 1000;
+}
+.a11y-btn {
+background: var(--panel-bg);
+color: var(--text-main);
+border: 2px solid var(--border-color);
+border-radius: 50%;
+width: 50px;
+height: 50px;
+font-size: 22px;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: 0.3s;
+box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.a11y-btn:hover { transform: scale(1.1); background: var(--btn-menu-bg); color: white; }
+.container { display: flex; height: 100vh; padding: 40px; gap: 40px; max-width: 1400px; margin: 0 auto; }
+/* --- COLUNA ESQUERDA --- */
+.left-panel {
+flex: 1.2; display: flex; flex-direction: column; justify-content: center;
+padding-right: 20px; position: relative; overflow-y: auto; padding-top: 20px;
+}
+.left-panel::-webkit-scrollbar { width: 8px; }
+.left-panel::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+.screen { display: none; animation: fadeIn 0.3s ease-in-out; }
+.active-screen { display: block; }
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(10px); }
+to { opacity: 1; transform: translateY(0); }
+}
+/* Logo do usuário /
+.logo-area { text-align: center; margin-bottom: 25px; }
+.logo-img {
+max-width: 250px;
+height: auto;
+border-radius: 10px;
+mix-blend-mode: multiply; / Remove o fundo branco no tema claro se possível /
+transition: 0.3s;
+}
+/ No tema escuro, forçamos um fundo branco sutil para a logo preta não sumir */
+.dark-theme .logo-img {
+background-color: white;
+padding: 10px;
+mix-blend-mode: normal;
+}
+.header-text { text-align: center; margin-bottom: 25px; }
+.header-text h2 { font-size: 26px; color: var(--header-text); margin-bottom: 5px; transition: 0.3s; }
+.header-text p { font-size: 18px; color: var(--text-sub); transition: 0.3s; }
+/* Botões de Menu */
+.menu-buttons { display: flex; flex-direction: column; gap: 10px; }
+.btn-menu {
+background-color: var(--btn-menu-bg); color: white; border: 1px solid var(--border-color);
+border-radius: 12px; padding: 12px 20px; display: flex; align-items: center; gap: 20px;
+cursor: pointer; text-align: left; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%;
+}
+.btn-menu:active { transform: scale(0.98); }
+.btn-menu:hover { background-color: var(--btn-menu-hover); }
+/* Cor específica para o tema escuro nos botões primários do menu */
+.dark-theme .btn-menu { border-color: var(--border-color); }
+.btn-menu .btn-icon { font-size: 28px; width: 40px; text-align: center; }
+.btn-menu .btn-text h3 { font-size: 18px; margin-bottom: 3px; font-weight: 600; }
+.btn-menu .btn-text p { font-size: 13px; opacity: 0.9; font-weight: 300; }
+/* Botões de Ação */
+.btn-action {
+display: block; width: 100%; padding: 15px; margin: 10px 0; font-size: 18px; font-weight: bold;
+border: none; border-radius: 10px; cursor: pointer; color: white; transition: 0.2s; text-align: center;
+}
+.btn-action:hover { opacity: 0.9; }
+.btn-primary { background: #0284c7; }
+.btn-success { background: #16a34a; }
+.btn-danger { background: #dc2626; }
+.btn-secondary { background: #64748b; }
+input[type="text"] {
+width: 100%; padding: 15px; font-size: 18px; margin-bottom: 20px;
+border: 1px solid var(--border-color); border-radius: 10px; text-align: center; outline: none;
+background: var(--input-bg); color: var(--text-main); transition: 0.3s;
+}
+input[type="text"]:focus { border-color: #0284c7; box-shadow: 0 0 5px rgba(2, 132, 199, 0.3); }
+.info-box {
+background: var(--info-bg); padding: 20px; border-radius: 12px; margin-bottom: 20px;
+border: 1px solid var(--info-border); box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+text-align: left; font-size: 16px; line-height: 1.6; color: var(--text-main); transition: 0.3s;
+}
+.info-box hr { border: 0; border-top: 1px solid var(--info-border); margin: 10px 0; }
+.text-center { text-align: center; }
+/* Pontos Turísticos */
+.tourist-spot {
+display: flex; align-items: center; gap: 15px; margin-bottom: 15px;
+padding-bottom: 15px; border-bottom: 1px solid var(--info-border);
+}
+.tourist-spot:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.spot-icon { background: #e0f2fe; color: #0284c7; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.dark-theme .spot-icon { background: #334155; color: #38bdf8; }
+/* --- ESTILOS DO CHAT --- */
+.chat-container {
+background: var(--panel-bg); height: 350px; border-radius: 12px; border: 1px solid var(--border-color);
+padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;
+}
+.chat-msg { padding: 12px 16px; border-radius: 15px; max-width: 85%; font-size: 15px; line-height: 1.4; animation: fadeIn 0.2s ease-in-out; color: #1e293b; }
+.msg-ai { background: #e0f2fe; align-self: flex-start; border-bottom-left-radius: 0; }
+.msg-user { background: #0284c7; color: white; align-self: flex-end; border-bottom-right-radius: 0; }
+.dark-theme .msg-ai { background: #334155; color: #f8fafc; }
+.chat-input-area { display: flex; gap: 10px; margin-bottom: 15px; }
+.chat-input-area input { margin-bottom: 0; text-align: left; }
+.chat-input-area button { margin: 0; width: auto; padding: 0 25px; }
+/* --- COLUNA DIREITA --- */
+.right-panel { flex: 1; display: flex; flex-direction: column; position: relative; border-radius: 20px; overflow: hidden; }
+.hotel-image { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+.robot-area { position: absolute; bottom: 20px; right: 20px; display: flex; align-items: flex-end; gap: 15px; }
+.robot-icon { font-size: 80px; color: #0284c7; background: white; border-radius: 50%; padding: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+.dark-theme .robot-icon { background: #1e293b; color: #38bdf8; }
+.speech-bubble { background: #0284c7; color: white; padding: 15px 20px; border-radius: 20px; border-bottom-right-radius: 0; font-size: 16px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+.dark-theme .speech-bubble { background: #38bdf8; color: #0f172a; }
+/* --- CLASSES PARA ACESSIBILIDADE VISUAL (FONTE GRANDE) --- */
+.large-font .header-text h2 { font-size: 34px; }
+.large-font .header-text p { font-size: 24px; }
+.large-font .btn-menu .btn-icon { font-size: 34px; }
+.large-font .btn-menu .btn-text h3 { font-size: 24px; }
+.large-font .btn-menu .btn-text p { font-size: 18px; }
+.large-font .info-box { font-size: 22px; }
+.large-font .btn-action { font-size: 24px; }
+.large-font .chat-msg { font-size: 20px; }
+.large-font input[type="text"] { font-size: 24px; }
+.large-font .speech-bubble { font-size: 22px; }
+.large-font p { font-size: 22px; }
+@media (max-width: 900px) {
+.container { flex-direction: column; height: auto; padding: 20px; padding-top: 80px; }
+.left-panel { padding-right: 0; }
+.right-panel { height: 300px; margin-top: 20px; }
+.robot-icon { font-size: 60px; padding: 8px; }
+.speech-bubble { font-size: 14px; padding: 10px 15px; }
+.a11y-bar { top: 10px; right: 10px; }
+}
+</style>
+</head>
+<body>
+<div class="a11y-bar">
+<button class="a11y-btn" onclick="toggleTheme()" title="Alternar Tema (Claro/Escuro)"><i class="fa-solid fa-circle-half-stroke"></i></button>
+<button class="a11y-btn" onclick="toggleFont()" title="Aumentar/Diminuir Letra"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+</div>
+<div class="container">
+<div class="left-panel">
+code
+Code
+<!-- TELA 1: HOME -->
+<div id="home" class="screen active-screen">
+  <div class="logo-area">
+    <img src="73886.jpg" alt="Logo Hotel IA" class="logo-img">
+  </div>
+  <div class="header-text"><h2>Olá, seja bem-vindo!</h2><p>Como podemos te ajudar hoje?</p></div>
+  <div class="menu-buttons">
+    <button class="btn-menu" onclick="nav('checkin-1')">
+      <div class="btn-icon"><i class="fa-solid fa-user"></i></div>
+      <div class="btn-text"><h3>Check-in</h3><p>Faça seu check-in de forma rápida e fácil</p></div>
+    </button>
+    <button class="btn-menu" onclick="nav('checkout-1')">
+      <div class="btn-icon"><i class="fa-solid fa-suitcase"></i></div>
+      <div class="btn-text"><h3>Check-out</h3><p>Finalize sua estadia</p></div>
+    </button>
+    <button class="btn-menu" onclick="nav('map-screen')">
+      <div class="btn-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+      <div class="btn-text"><h3>Mapa Turístico</h3><p>Descubra atrações e pontos de interesse</p></div>
+    </button>
+    <button class="btn-menu" onclick="nav('chat-screen')">
+      <div class="btn-icon"><i class="fa-solid fa-robot"></i></div>
+      <div class="btn-text"><h3>Assistente Virtual</h3><p>Tire suas dúvidas ou relate problemas</p></div>
+    </button>
+    <!-- O botão da recepção ganha um inline style flexível para o tema escuro não sobrescrever mal -->
+    <button class="btn-menu" onclick="nav('reception'); dispararAlarme()" style="background-color: #0f172a; border-color:#0f172a;">
+      <div class="btn-icon"><i class="fa-solid fa-headset" style="color:white;"></i></div>
+      <div class="btn-text" style="color:white;"><h3>Falar com a recepção</h3><p>Precisa de ajuda? Fale com um atendente</p></div>
+    </button>
+  </div>
+</div>
+
+<!-- TELA: MAPA TURÍSTICO (NOVIDADE) -->
+<div id="map-screen" class="screen">
+  <div class="logo-area">
+    <img src="73886.jpg" alt="Logo Hotel IA" class="logo-img" style="max-height: 80px;">
+  </div>
+  <div class="header-text"><h2>Guia Turístico Local</h2><p>Conheça as melhores opções na cidade</p></div>
+  
+  <div class="info-box">
+    <div class="tourist-spot">
+      <div class="spot-icon"><i class="fa-solid fa-tree"></i></div>
+      <div><strong>Parque Ecológico das Águas</strong><br>Ótimo para caminhadas e lazer. (1.2 km)</div>
+    </div>
+    <div class="tourist-spot">
+      <div class="spot-icon"><i class="fa-solid fa-building-columns"></i></div>
+      <div><strong>Museu Histórico Municipal</strong><br>Conheça a história da nossa região. (2.5 km)</div>
+    </div>
+    <div class="tourist-spot">
+      <div class="spot-icon"><i class="fa-solid fa-utensils"></i></div>
+      <div><strong>Polo Gastronômico Central</strong><br>Diversos restaurantes e bares locais. (800m)</div>
+    </div>
+    <div class="tourist-spot">
+      <div class="spot-icon"><i class="fa-solid fa-mountain-sun"></i></div>
+      <div><strong>Mirante da Serra</strong><br>A vista mais bonita do pôr do sol. (5.0 km)</div>
+    </div>
+  </div>
+  
+  <button class="btn-action btn-secondary" onclick="nav('home')">Voltar ao Início</button>
+</div>
+
+<!-- TELA: CHECK-IN -->
+<div id="checkin-1" class="screen text-center">
+  <div class="logo-area"><img src="73886.jpg" class="logo-img" style="max-height: 80px;"></div>
+  <div class="header-text"><h2>Fazer Check-in</h2></div>
+  <p style="margin-bottom: 15px;">Para iniciarmos, informe o número da sua reserva:</p>
+  <input type="text" placeholder="Ex: 12345">
+  <button class="btn-action btn-primary" onclick="nav('checkin-2')">Confirmar</button>
+  <button class="btn-action btn-secondary" onclick="nav('home')">Voltar</button>
+</div>
+
+<div id="checkin-2" class="screen text-center">
+  <div class="logo-area"><i class="fa-solid fa-circle-check" style="color: #16a34a; font-size: 50px;"></i><h2 style="color: #16a34a;">Check-in Concluído</h2></div>
+  <div class="info-box">
+    <p><strong><i class="fa-solid fa-door-closed"></i> Quarto:</strong> 205</p>
+    <p><strong><i class="fa-solid fa-mug-hot"></i> Café da manhã:</strong> 7h às 10h</p>
+    <p><strong><i class="fa-solid fa-wifi"></i> Wi-Fi:</strong> HOTELIA205</p>
+  </div>
+  <p style="margin-bottom: 20px;">Pronto! Pegue sua chave na bandeja abaixo.</p>
+  <button class="btn-action btn-success" onclick="nav('home')">Finalizar</button>
+</div>
+
+<!-- TELA: CHECK-OUT -->
+<div id="checkout-1" class="screen text-center">
+  <div class="logo-area"><img src="73886.jpg" class="logo-img" style="max-height: 80px;"></div>
+  <div class="header-text"><h2>Fazer Check-out</h2></div>
+  <div class="info-box">
+    <p><strong>Hóspede:</strong> Maria Oliveira</p>
+    <p><strong>Quarto:</strong> 205</p>
+    <hr>
+    <p>Diária: R$ 250,00</p>
+    <p>Restaurante: R$ 45,00</p>
+    <h3 style="margin-top: 10px; color: #0284c7;">Total: R$ 295,00</h3>
+  </div>
+  <p style="margin-bottom: 15px;">Deseja confirmar o check-out?</p>
+  <button class="btn-action btn-success" onclick="nav('checkout-2')">Sim, confirmar</button>
+  <button class="btn-action btn-secondary" onclick="nav('home')">Voltar</button>
+</div>
+
+<div id="checkout-2" class="screen text-center">
+  <div class="logo-area"><i class="fa-solid fa-handshake" style="color: #0284c7; font-size: 50px;"></i><h2 style="color: #0284c7;">Check-out Realizado!</h2></div>
+  <p style="font-size: 18px; margin-bottom: 30px;">Obrigado por se hospedar conosco. Volte sempre!</p>
+  <button class="btn-action btn-primary" onclick="nav('home')">Voltar ao Início</button>
+</div>
+
+<!-- TELA: CHAT IA -->
+<div id="chat-screen" class="screen">
+  <div class="logo-area" style="margin-bottom: 10px;"><img src="73886.jpg" class="logo-img" style="max-height: 80px;"></div>
+  <div class="header-text"><h2 style="margin-bottom: 5px;">Assistente Virtual</h2></div>
+  
+  <div class="chat-container" id="chat-history">
+    <div class="chat-msg msg-ai">Olá! Sou a inteligência artificial do hotel. Como posso ajudar a melhorar sua estadia hoje? (Dica: pergunte sobre o café, wi-fi ou reporte um problema).</div>
+  </div>
+
+  <div class="chat-input-area">
+    <input type="text" id="chat-input" placeholder="Digite sua mensagem..." onkeypress="handleEnter(event)">
+    <button class="btn-action btn-primary" onclick="enviarMensagem()"><i class="fa-solid fa-paper-plane"></i></button>
+  </div>
+
+  <button class="btn-action btn-secondary" onclick="nav('home')">Voltar ao Início</button>
+</div>
+
+<!-- TELA: RECEPÇÃO CHAMADA -->
+<div id="reception" class="screen text-center">
+  <div class="logo-area"><i class="fa-solid fa-user-tie" style="font-size:50px;"></i><h2>Atendimento Humano</h2></div>
+  <div class="info-box text-center">
+    <h3 style="color: #16a34a; margin-bottom: 10px;">✅ Recepcionista acionado!</h3>
+    <p>Por favor, aguarde. Um de nossos colaboradores já está a caminho para ajudá-lo de forma personalizada.</p>
+  </div>
+  <button class="btn-action btn-primary" onclick="nav('home')">Voltar ao Início</button>
+</div>
+</div>
+<div class="right-panel">
+<!-- Imagem de fundo do projeto, mantemos a mesma referência se você já usava outra,
+ou deixamos uma estilização genérica. Você pode substituir '1000716422.png' pela
+foto da fachada se tiver, por enquanto deixei o mesmo espaço reservado. -->
+<img src="1000716422.png" alt="Recepção do Hotel" class="hotel-image">
+code
+Code
+<div class="robot-area">
+  <div class="speech-bubble" id="balao-robo">Estamos aqui<br>para te atender!</div>
+  <div class="robot-icon"><i class="fa-solid fa-robot"></i></div>
+</div>
+</div>
+</div>
+<script>
+/* =========================================
+FUNÇÕES DE ACESSIBILIDADE
+========================================= */
+function toggleTheme() {
+document.body.classList.toggle('dark-theme');
+}
+
+function toggleFont() {
+document.body.classList.toggle('large-font');
+}
+
+/* =========================================
+NAVEGAÇÃO ENTRE TELAS
+========================================= */
+function nav(screenId) {
+var screens = document.querySelectorAll('.screen');
+for (var i = 0; i < screens.length; i++) {
+screens[i].classList.remove('active-screen');
+}
+document.getElementById(screenId).classList.add('active-screen');
+
+var balao = document.getElementById('balao-robo');
+if (screenId === 'home') balao.innerHTML = "Estamos aqui<br>para te atender!";
+else if (screenId === 'map-screen') balao.innerHTML = "Aproveite a cidade<br>e nossos passeios!";
+else if (screenId === 'checkin-1' || screenId === 'checkin-2') balao.innerHTML = "Processo rápido<br>e sem filas!";
+else if (screenId === 'checkout-1' || screenId === 'checkout-2') balao.innerHTML = "Esperamos que<br>tenha gostado!";
+else if (screenId === 'chat-screen') balao.innerHTML = "Pode digitar, eu<br>tiro suas dúvidas!";
+else if (screenId === 'reception') balao.innerHTML = "Humano a caminho!";
+}
+
+function dispararAlarme() {
+console.log("Sinal enviado para a recepção!");
+}
+
+/* =========================================
+LÓGICA DO CHAT (INTELIGÊNCIA SIMULADA)
+========================================= */
+function handleEnter(e) {
+if (e.key === 'Enter') enviarMensagem();
+}
+
+function enviarMensagem() {
+var input = document.getElementById('chat-input');
+var textoDigitado = input.value.trim();
+if (textoDigitado === "") return;
+
+adicionarMensagem(textoDigitado, 'msg-user');
+input.value = '';
+
+setTimeout(function() {
+processarRespostaIA(textoDigitado.toLowerCase());
+}, 1000);
+}
+
+function adicionarMensagem(texto, classeCSS) {
+var chatHistory = document.getElementById('chat-history');
+var novaMensagem = document.createElement('div');
+novaMensagem.className = 'chat-msg ' + classeCSS;
+novaMensagem.innerHTML = texto;
+chatHistory.appendChild(novaMensagem);
+chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+function processarRespostaIA(texto) {
+if (texto.includes("café") || texto.includes("cafe") || texto.includes("manha")) {
+adicionarMensagem("☕ O nosso café da manhã é servido todos os dias, das 7h às 10h, no restaurante principal localizado no térreo.", 'msg-ai');
+} else if (texto.includes("wifi") || texto.includes("wi-fi") || texto.includes("internet") || texto.includes("senha")) {
+adicionarMensagem("📶 A rede do nosso Wi-Fi é <strong>HOTEL_IA</strong> e a senha é <strong>HOTELIA205</strong>.", 'msg-ai');
+} else if (texto.includes("ar") || texto.includes("condicionado") || texto.includes("problema") || texto.includes("quebrado") || texto.includes("manutenção")) {
+var respostaProblema = `
+⚠️ Identifiquei que essa situação necessita de atendimento da nossa equipe técnica.<br><br>
+Deseja que eu chame um recepcionista para auxiliá-lo imediatamente?<br>
+<button class="btn-action btn-danger" style="margin-top:10px; font-size:15px; padding:10px;" onclick="nav('reception'); dispararAlarme()">
+<i class="fa-solid fa-headset"></i> CHAMAR RECEPCIONISTA
+</button>
+`;
+adicionarMensagem(respostaProblema, 'msg-ai');
+} else {
+adicionarMensagem("Desculpe, ainda estou aprendendo. Posso ajudar com informações básicas (como wi-fi e café da manhã) ou acionar um recepcionista humano para você.", 'msg-ai');
+}
+}
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Totem Hotel IA</title>
+<!-- Biblioteca de Ícones (FontAwesome) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+/* Variáveis de cores para facilitar o Tema Escuro */
+:root {
+--bg-main: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+--panel-bg: white;
+--text-main: #1e293b;
+--text-sub: #475569;
+--border-color: #cbd5e1;
+--info-bg: white;
+--info-border: #e2e8f0;
+--btn-menu-bg: #0284c7;
+--btn-menu-hover: #0369a1;
+--header-text: #0f172a;
+--input-bg: white;
+}
+/* Classe do Tema Escuro */
+.dark-theme {
+--bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+--panel-bg: #1e293b;
+--text-main: #f8fafc;
+--text-sub: #94a3b8;
+--border-color: #334155;
+--info-bg: #0f172a;
+--info-border: #334155;
+--btn-menu-bg: #1e293b;
+--btn-menu-hover: #334155;
+--header-text: #f8fafc;
+--input-bg: #1e293b;
+}
+{ box-sizing: border-box; margin: 0; padding: 0; }
+body {
+font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+background: var(--bg-main);
+color: var(--text-main);
+min-height: 100vh;
+overflow-x: hidden;
+transition: background 0.3s ease, color 0.3s ease;
+}
+/* --- BARRA DE ACESSIBILIDADE --- */
+.a11y-bar {
+position: fixed;
+top: 20px;
+right: 20px;
+display: flex;
+gap: 15px;
+z-index: 1000;
+}
+.a11y-btn {
+background: var(--panel-bg);
+color: var(--text-main);
+border: 2px solid var(--border-color);
+border-radius: 50%;
+width: 50px;
+height: 50px;
+font-size: 22px;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: 0.3s;
+box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.a11y-btn:hover { transform: scale(1.1); background: var(--btn-menu-bg); color: white; }
+.container { display: flex; height: 100vh; padding: 40px; gap: 40px; max-width: 1400px; margin: 0 auto; }
+/* --- COLUNA ESQUERDA --- */
+.left-panel {
+flex: 1.2; display: flex; flex-direction: column; justify-content: center;
+padding-right: 20px; position: relative; overflow-y: auto; padding-top: 20px;
+}
+.left-panel::-webkit-scrollbar { width: 8px; }
+.left-panel::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+.screen { display: none; animation: fadeIn 0.3s ease-in-out; }
+.active-screen { display: block; }
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(10px); }
+to { opacity: 1; transform: translateY(0); }
+}
+/* Logo do usuário /
+.logo-area { text-align: center; margin-bottom: 25px; }
+.logo-img {
+max-width: 250px;
+height: auto;
+border-radius: 10px;
+mix-blend-mode: multiply; / Remove o fundo branco no tema claro se possível /
+transition: 0.3s;
+}
+/ No tema escuro, forçamos um fundo branco sutil para a logo preta não sumir */
+.dark-theme .logo-img {
+background-color: white;
+padding: 10px;
+mix-blend-mode: normal;
+}
+.header-text { text-align: center; margin-bottom: 25px; }
+.header-text h2 { font-size: 26px; color: var(--header-text); margin-bottom: 5px; transition: 0.3s; }
+.header-text p { font-size: 18px; color: var(--text-sub); transition: 0.3s; }
+/* Botões de Menu */
+.menu-buttons { display: flex; flex-direction: column; gap: 10px; }
+.btn-menu {
+background-color: var(--btn-menu-bg); color: white; border: 1px solid var(--border-color);
+border-radius: 12px; padding: 12px 20px; display: flex; align-items: center; gap: 20px;
+cursor: pointer; text-align: left; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%;
+}
+.btn-menu:active { transform: scale(0.98); }
+.btn-menu:hover { background-color: var(--btn-menu-hover); }
+/* Cor específica para o tema escuro nos botões primários do menu */
+.dark-theme .btn-menu { border-color: var(--border-color); }
+.btn-menu .btn-icon { font-size: 28px; width: 40px; text-align: center; }
+.btn-menu .btn-text h3 { font-size: 18px; margin-bottom: 3px; font-weight: 600; }
+.btn-menu .btn-text p { font-size: 13px; opacity: 0.9; font-weight: 300; }
+/* Botões de Ação */
+.btn-action {
+display: block; width: 100%; padding: 15px; margin: 10px 0; font-size: 18px; font-weight: bold;
+border: none; border-radius: 10px; cursor: pointer; color: white; transition: 0.2s; text-align: center;
+}
+.btn-action:hover { opacity: 0.9; }
+.btn-primary { background: #0284c7; }
+.btn-success { background: #16a34a; }
+.btn-danger { background: #dc2626; }
+.btn-secondary { background: #64748b; }
+input[type="text"] {
+width: 100%; padding: 15px; font-size: 18px; margin-bottom: 20px;
+border: 1px solid var(--border-color); border-radius: 10px; text-align: center; outline: none;
+background: var(--input-bg); color: var(--text-main); transition: 0.3s;
+}
+input[type="text"]:focus { border-color: #0284c7; box-shadow: 0 0 5px rgba(2, 132, 199, 0.3); }
+.info-box {
+background: var(--info-bg); padding: 20px; border-radius: 12px; margin-bottom: 20px;
+border: 1px solid var(--info-border); box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+text-align: left; font-size: 16px; line-height: 1.6; color: var(--text-main); transition: 0.3s;
+}
+.info-box hr { border: 0; border-top: 1px solid var(--info-border); margin: 10px 0; }
+.text-center { text-align: center; }
+/* Pontos Turísticos */
+.tourist-spot {
+display: flex; align-items: center; gap: 15px; margin-bottom: 15px;
+padding-bottom: 15px; border-bottom: 1px solid var(--info-border);
+}
+.tourist-spot:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.spot-icon { background: #e0f2fe; color: #0284c7; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.dark-theme .spot-icon { background: #334155; color: #38bdf8; }
+/* --- ESTILOS DO CHAT --- */
+.chat-container {
+background: var(--panel-bg); height: 350px; border-radius: 12px; border: 1px solid var(--border-color);
+padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;
+}
+.chat-msg { padding: 12px 16px; border-radius: 15px; max-width: 85%; font-size: 15px; line-height: 1.4; animation: fadeIn 0.2s ease-in-out; color: #1e293b; }
+.msg-ai { background: #e0f2fe; align-self: flex-start; border-bottom-left-radius: 0; }
+.msg-user { background: #0284c7; color: white; align-self: flex-end; border-bottom-right-radius: 0; }
+.dark-theme .msg-ai { background: #334155; color: #f8fafc; }
+.chat-input-area { display: flex; gap: 10px; margin-bottom: 15px; }
+.chat-input-area input { margin-bottom: 0; text-align: left; }
+.chat-input-area button { margin: 0; width: auto; padding: 0 25px; }
+/* --- COLUNA DIREITA --- */
+.right-panel { flex: 1; display: flex; flex-direction: column; position: relative; border-radius: 20px; overflow: hidden; }
+.hotel-image { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+.robot-area { position: absolute; bottom: 20px; right: 20px; display: flex; align-items: flex-end; gap: 15px; }
+.robot-icon { font-size: 80px; color: #0284c7; background: white; border-radius: 50%; padding: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+.dark-theme .robot-icon { background: #1e293b; color: #38bdf8; }
+.speech-bubble { background: #0284c7; color: white; padding: 15px 20px; border-radius: 20px; border-bottom-right-radius: 0; font-size: 16px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+.dark-theme .speech-bubble { background: #38bdf8; color: #0f172a; }
+/* --- CLASSES PARA ACESSIBILIDADE VISUAL (FONTE GRANDE) --- */
+.large-font .header-text h2 { font-size: 34px; }
+.large-font .header-text p { font-size: 24px; }
+.large-font .btn-menu .btn-icon { font-size: 34px; }
+.large-font .btn-menu .btn-text h3 { font-size: 24px; }
+.large-font .btn-menu .btn-text p { font-size: 18px; }
+.large-font .info-box { font-size: 22px; }
+.large-font .btn-action { font-size: 24px; }
+.large-font .chat-msg { font-size: 20px; }
+.large-font input[type="text"] { font-size: 24px; }
+.large-font .speech-bubble { font-size: 22px; }
+.large-font p { font-size: 22px; }
+@media (max-width: 900px) {
+.container { flex-direction: column; height: auto; padding: 20px; padding-top: 80px; }
+.left-panel { padding-right: 0; }
+.right-panel { height: 300px; margin-top: 20px; }
+.robot-icon { font-size: 60px; padding: 8px; }
+.speech-bubble { font-size: 14px; padding: 10px 15px; }
+.a11y-bar { top: 10px; right: 10px; }
+}
+</style>
+</head>
+<body>
+<div class="a11y-bar">
+<button class="a11y-btn" onclick="toggleTheme()" title="Alternar Tema (Claro/Escuro)"><i class="fa-solid fa-circle-half-stroke"></i></button>
+<button class="a11y-btn" onclick="toggleFont()" title="Aumentar/Diminuir Letra"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+</div>
+<div class="container">
+<div class="left-panel">
+code
+Code
+<!-- TELA 1: HOME -->
+<div id="home" class="screen active-screen">
+  <div class="logo-area">
+    <img src="73886.jpg" alt="Logo Hotel IA" class="logo-img">
+  </div>
+  <div class="header-text"><h2>Olá, seja bem-vindo!</h2><p>Como podemos te ajudar hoje?</p></div>
+  <div class="menu-buttons">
+    <button class="btn-menu" onclick="nav('checkin-1')">
+      <div class="btn-icon"><i class="fa-solid fa-user"></i></div>
+      <div class="btn-text"><h3>Check-in</h3><p>Faça seu check-in de forma rápida e fácil</p></div>
+    </button>
+    <button class="btn-menu" onclick="nav('checkout-1')">
+      <div class="btn-icon"><i class="fa-solid fa-suitcase"></i></div>
+      <div class="btn-text"><h3>Check-out</h3><p>Finalize sua estadia</p></div>
+    </button>
+    <button class="btn-menu" onclick="nav('map-screen')">
+      <div class="btn-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+      <div class="btn-text"><h3>Mapa Turístico</h3><p>Descubra atrações e pontos de interesse</p></div>
+    </button>
+    <button class="btn-menu" onclick="nav('chat-screen')">
+      <div class="btn-icon"><i class="fa-solid fa-robot"></i></div>
+      <div class="btn-text"><h3>Assistente Virtual</h3><p>Tire suas dúvidas ou relate problemas</p></div>
+    </button>
+    <!-- O botão da recepção ganha um inline style flexível para o tema escuro não sobrescrever mal -->
+    <button class="btn-menu" onclick="nav('reception'); dispararAlarme()" style="background-color: #0f172a; border-color:#0f172a;">
+      <div class="btn-icon"><i class="fa-solid fa-headset" style="color:white;"></i></div>
+      <div class="btn-text" style="color:white;"><h3>Falar com a recepção</h3><p>Precisa de ajuda? Fale com um atendente</p></div>
+    </button>
+  </div>
+</div>
+
+<!-- TELA: MAPA TURÍSTICO (NOVIDADE) -->
+<div id="map-screen" class="screen">
+  <div class="logo-area">
+    <img src="73886.jpg" alt="Logo Hotel IA" class="logo-img" style="max-height: 80px;">
+  </div>
+  <div class="header-text"><h2>Guia Turístico Local</h2><p>Conheça as melhores opções na cidade</p></div>
+  
+  <div class="info-box">
+    <div class="tourist-spot">
+      <div class="spot-icon"><i class="fa-solid fa-tree"></i></div>
+      <div><strong>Parque Ecológico das Águas</strong><br>Ótimo para caminhadas e lazer. (1.2 km)</div>
+    </div>
+    <div class="tourist-spot">
+      <div class="spot-icon"><i class="fa-solid fa-building-columns"></i></div>
+      <div><strong>Museu Histórico Municipal</strong><br>Conheça a história da nossa região. (2.5 km)</div>
+    </div>
+    <div class="tourist-spot">
+      <div class="spot-icon"><i class="fa-solid fa-utensils"></i></div>
+      <div><strong>Polo Gastronômico Central</strong><br>Diversos restaurantes e bares locais. (800m)</div>
+    </div>
+    <div class="tourist-spot">
+      <div class="spot-icon"><i class="fa-solid fa-mountain-sun"></i></div>
+      <div><strong>Mirante da Serra</strong><br>A vista mais bonita do pôr do sol. (5.0 km)</div>
+    </div>
+  </div>
+  
+  <button class="btn-action btn-secondary" onclick="nav('home')">Voltar ao Início</button>
+</div>
+
+<!-- TELA: CHECK-IN -->
+<div id="checkin-1" class="screen text-center">
+  <div class="logo-area"><img src="73886.jpg" class="logo-img" style="max-height: 80px;"></div>
+  <div class="header-text"><h2>Fazer Check-in</h2></div>
+  <p style="margin-bottom: 15px;">Para iniciarmos, informe o número da sua reserva:</p>
+  <input type="text" placeholder="Ex: 12345">
+  <button class="btn-action btn-primary" onclick="nav('checkin-2')">Confirmar</button>
+  <button class="btn-action btn-secondary" onclick="nav('home')">Voltar</button>
+</div>
+
+<div id="checkin-2" class="screen text-center">
+  <div class="logo-area"><i class="fa-solid fa-circle-check" style="color: #16a34a; font-size: 50px;"></i><h2 style="color: #16a34a;">Check-in Concluído</h2></div>
+  <div class="info-box">
+    <p><strong><i class="fa-solid fa-door-closed"></i> Quarto:</strong> 205</p>
+    <p><strong><i class="fa-solid fa-mug-hot"></i> Café da manhã:</strong> 7h às 10h</p>
+    <p><strong><i class="fa-solid fa-wifi"></i> Wi-Fi:</strong> HOTELIA205</p>
+  </div>
+  <p style="margin-bottom: 20px;">Pronto! Pegue sua chave na bandeja abaixo.</p>
+  <button class="btn-action btn-success" onclick="nav('home')">Finalizar</button>
+</div>
+
+<!-- TELA: CHECK-OUT -->
+<div id="checkout-1" class="screen text-center">
+  <div class="logo-area"><img src="73886.jpg" class="logo-img" style="max-height: 80px;"></div>
+  <div class="header-text"><h2>Fazer Check-out</h2></div>
+  <div class="info-box">
+    <p><strong>Hóspede:</strong> Maria Oliveira</p>
+    <p><strong>Quarto:</strong> 205</p>
+    <hr>
+    <p>Diária: R$ 250,00</p>
+    <p>Restaurante: R$ 45,00</p>
+    <h3 style="margin-top: 10px; color: #0284c7;">Total: R$ 295,00</h3>
+  </div>
+  <p style="margin-bottom: 15px;">Deseja confirmar o check-out?</p>
+  <button class="btn-action btn-success" onclick="nav('checkout-2')">Sim, confirmar</button>
+  <button class="btn-action btn-secondary" onclick="nav('home')">Voltar</button>
+</div>
+
+<div id="checkout-2" class="screen text-center">
+  <div class="logo-area"><i class="fa-solid fa-handshake" style="color: #0284c7; font-size: 50px;"></i><h2 style="color: #0284c7;">Check-out Realizado!</h2></div>
+  <p style="font-size: 18px; margin-bottom: 30px;">Obrigado por se hospedar conosco. Volte sempre!</p>
+  <button class="btn-action btn-primary" onclick="nav('home')">Voltar ao Início</button>
+</div>
+
+<!-- TELA: CHAT IA -->
+<div id="chat-screen" class="screen">
+  <div class="logo-area" style="margin-bottom: 10px;"><img src="73886.jpg" class="logo-img" style="max-height: 80px;"></div>
+  <div class="header-text"><h2 style="margin-bottom: 5px;">Assistente Virtual</h2></div>
+  
+  <div class="chat-container" id="chat-history">
+    <div class="chat-msg msg-ai">Olá! Sou a inteligência artificial do hotel. Como posso ajudar a melhorar sua estadia hoje? (Dica: pergunte sobre o café, wi-fi ou reporte um problema).</div>
+  </div>
+
+  <div class="chat-input-area">
+    <input type="text" id="chat-input" placeholder="Digite sua mensagem..." onkeypress="handleEnter(event)">
+    <button class="btn-action btn-primary" onclick="enviarMensagem()"><i class="fa-solid fa-paper-plane"></i></button>
+  </div>
+
+  <button class="btn-action btn-secondary" onclick="nav('home')">Voltar ao Início</button>
+</div>
+
+<!-- TELA: RECEPÇÃO CHAMADA -->
+<div id="reception" class="screen text-center">
+  <div class="logo-area"><i class="fa-solid fa-user-tie" style="font-size:50px;"></i><h2>Atendimento Humano</h2></div>
+  <div class="info-box text-center">
+    <h3 style="color: #16a34a; margin-bottom: 10px;">✅ Recepcionista acionado!</h3>
+    <p>Por favor, aguarde. Um de nossos colaboradores já está a caminho para ajudá-lo de forma personalizada.</p>
+  </div>
+  <button class="btn-action btn-primary" onclick="nav('home')">Voltar ao Início</button>
+</div>
+</div>
+<div class="right-panel">
+<!-- Imagem de fundo do projeto, mantemos a mesma referência se você já usava outra,
+ou deixamos uma estilização genérica. Você pode substituir '1000716422.png' pela
+foto da fachada se tiver, por enquanto deixei o mesmo espaço reservado. -->
+<img src="1000716422.png" alt="Recepção do Hotel" class="hotel-image">
+code
+Code
+<div class="robot-area">
+  <div class="speech-bubble" id="balao-robo">Estamos aqui<br>para te atender!</div>
+  <div class="robot-icon"><i class="fa-solid fa-robot"></i></div>
+</div>
+</div>
+</div>
+<script>
+/* =========================================
+FUNÇÕES DE ACESSIBILIDADE
+========================================= */
+function toggleTheme() {
+document.body.classList.toggle('dark-theme');
+}
+
+function toggleFont() {
+document.body.classList.toggle('large-font');
+}
+
+/* =========================================
+NAVEGAÇÃO ENTRE TELAS
+========================================= */
+function nav(screenId) {
+var screens = document.querySelectorAll('.screen');
+for (var i = 0; i < screens.length; i++) {
+screens[i].classList.remove('active-screen');
+}
+document.getElementById(screenId).classList.add('active-screen');
+
+var balao = document.getElementById('balao-robo');
+if (screenId === 'home') balao.innerHTML = "Estamos aqui<br>para te atender!";
+else if (screenId === 'map-screen') balao.innerHTML = "Aproveite a cidade<br>e nossos passeios!";
+else if (screenId === 'checkin-1' || screenId === 'checkin-2') balao.innerHTML = "Processo rápido<br>e sem filas!";
+else if (screenId === 'checkout-1' || screenId === 'checkout-2') balao.innerHTML = "Esperamos que<br>tenha gostado!";
+else if (screenId === 'chat-screen') balao.innerHTML = "Pode digitar, eu<br>tiro suas dúvidas!";
+else if (screenId === 'reception') balao.innerHTML = "Humano a caminho!";
+}
+
+function dispararAlarme() {
+console.log("Sinal enviado para a recepção!");
+}
+
+/* =========================================
+LÓGICA DO CHAT (INTELIGÊNCIA SIMULADA)
+========================================= */
+function handleEnter(e) {
+if (e.key === 'Enter') enviarMensagem();
+}
+
+function enviarMensagem() {
+var input = document.getElementById('chat-input');
+var textoDigitado = input.value.trim();
+if (textoDigitado === "") return;
+
+adicionarMensagem(textoDigitado, 'msg-user');
+input.value = '';
+
+setTimeout(function() {
+processarRespostaIA(textoDigitado.toLowerCase());
+}, 1000);
+}
+
+function adicionarMensagem(texto, classeCSS) {
+var chatHistory = document.getElementById('chat-history');
+var novaMensagem = document.createElement('div');
+novaMensagem.className = 'chat-msg ' + classeCSS;
+novaMensagem.innerHTML = texto;
+chatHistory.appendChild(novaMensagem);
+chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+function processarRespostaIA(texto) {
+if (texto.includes("café") || texto.includes("cafe") || texto.includes("manha")) {
+adicionarMensagem("☕ O nosso café da manhã é servido todos os dias, das 7h às 10h, no restaurante principal localizado no térreo.", 'msg-ai');
+} else if (texto.includes("wifi") || texto.includes("wi-fi") || texto.includes("internet") || texto.includes("senha")) {
+adicionarMensagem("📶 A rede do nosso Wi-Fi é <strong>HOTEL_IA</strong> e a senha é <strong>HOTELIA205</strong>.", 'msg-ai');
+} else if (texto.includes("ar") || texto.includes("condicionado") || texto.includes("problema") || texto.includes("quebrado") || texto.includes("manutenção")) {
+var respostaProblema = `
+⚠️ Identifiquei que essa situação necessita de atendimento da nossa equipe técnica.<br><br>
+Deseja que eu chame um recepcionista para auxiliá-lo imediatamente?<br>
+<button class="btn-action btn-danger" style="margin-top:10px; font-size:15px; padding:10px;" onclick="nav('reception'); dispararAlarme()">
+<i class="fa-solid fa-headset"></i> CHAMAR RECEPCIONISTA
+</button>
+`;
+adicionarMensagem(respostaProblema, 'msg-ai');
+} else {
+adicionarMensagem("Desculpe, ainda estou aprendendo. Posso ajudar com informações básicas (como wi-fi e café da manhã) ou acionar um recepcionista humano para você.", 'msg-ai');
+}
+}
+</script>
+</body>
+</html>
+Gemini 3.8 Flash
+Ran for 229s
+
+summarize_auto
+Action history
+chevron_right
+Here are key actions taken for the app:
+
+edit
+Edited 16 files
+metadata.json
+check_circle
+index.html
+check_circle
+server.ts
+check_circle
+package.json
+check_circle
+src/utils/audio.ts
+check_circle
+src/data/hotelData.ts
+check_circle
+src/components/HeaderA11y.tsx
+check_circle
+src/components/RobotMascot.tsx
+check_circle
+src/components/screens/HomeScreen.tsx
+check_circle
+src/components/screens/CheckinScreen.tsx
+check_circle
+src/components/screens/CheckoutScreen.tsx
+check_circle
+src/components/screens/MapScreen.tsx
+check_circle
+src/components/screens/ChatScreen.tsx
+check_circle
+src/components/screens/ReceptionScreen.tsx
+check_circle
+src/index.css
+check_circle
+src/App.tsx
+check_circle
+build
+Built
+Transformei o protótipo do Totem Hotel IA em uma aplicação React completa, touch-friendly e full-stack com os seguintes recursos:
+🌟 Funcionalidades Implementadas
+Barra de Acessibilidade & Status em Tempo Real
+Alternância de Tema: Modo Claro e Modo Escuro com contraste aprimorado.
+Tamanho da Fonte: 3 níveis de escala tipográfica (Padrão, Grande e Extra Grande) para facilitar a leitura no totem.
+Sintetizador de Áudio (Web Audio API): Sons táteis de toque, sino de recepção metálico (Ding-Ding), som mecânico de emissão de chave e toque de sucesso.
+Relógio Digital & Clima: Horário ao vivo, data completa e widget de temperatura.
+Fluxo Completo de Check-in Expresso
+Busca por código de reserva (com atalhos rápidos para teste imediato #12345 e #67890).
+Teclado numérico virtual sensível ao toque.
+Conferência de dados do hóspede e quarto atribuído (ex: Quarto 205).
+Animação de gravação e dispensa física do cartão magnético na bandeja do totem.
+Informações do Wi-Fi com botão de cópia rápida e horários do café da manhã.
+Fluxo Completo de Check-out Descomplicado
+Extrato discriminado de diárias e consumos (restaurante e frigobar).
+Seleção de pagamento: Cartão por aproximação (Contactless), PIX Instantâneo com QR Code ou Balcão.
+Urna interativa de devolução do cartão magnético com sensor simulado.
+Pesquisa rápida de satisfação (1 a 5 estrelas e tags de avaliação).
+Guia & Mapa Turístico Interativo
+Todos os pontos turísticos do projeto original (Parque Ecológico das Águas, Museu Histórico Municipal, Polo Gastronômico Central, Mirante da Serra e novos pontos).
+Filtros por categoria, distâncias a pé e de carro, horários e modal com QR Code para abrir rotas no GPS do smartphone.
+Assistente Virtual com Inteligência Artificial
+Alimentado pelo Gemini 3.8 Flash via backend Express (/api/chat) com fallback inteligente local offline.
+Botões de atalho rápido (Café, Wi-Fi, Piscina, Estacionamento, Ar-condicionado).
+Reconhecimento de relatos de manutenção (ex: ar-condicionado quebrado, vazamentos) com botão direto de acionamento imediato da recepção.
+Ditado por voz (microfone) e leitura da resposta em voz alta (Text-to-Speech).
+Chamar Recepção / Atendimento Humano
+Alerta sonoro de sino de balcão.
+Geração de ticket de atendimento (#REC-XXX), identificação do atendente a caminho e cronômetro estimado de espera.
+Painel do Mascote Concierge (Toty)
+Mascote animado com expressões em SVG, olhos com LED piscante e balão de fala dinâmico sincronizado com cada tela navegada.
+flag
+Checkpoint
+ficou perfeito, agora pode me guiar pra adicionar exatamente isso no github? pelo celular
+Gemini 3.8 Flash
+Ran for 7s
+lightbulb
+Thought for 7 seconds
+Aqui está o passo a passo bem simples e prático para colocar o seu projeto no GitHub direto pelo celular (usando o navegador como Chrome ou Safari):
+Opção 1: Publicar como Site Online (Mais Fácil e Rápido pelo Celular)
+Se você quer ter um link que qualquer pessoa possa abrir e ver o Totem funcionando, o jeito mais rápido no celular é criar um arquivo index.html e ativar o GitHub Pages:
+Acesse o GitHub:
+Abra o navegador do celular (Chrome, Safari, etc.) e acerte em github.com.
+Faça login na sua conta.
+Crie um Novo Repositório:
+No canto superior direito, toque no ícone do seu perfil ou no botão + (se não aparecer, toque nos 3 pontinhos do navegador e marque "Versão para Computador" / "Para Computador").
+Toque em New repository (Novo repositório).
+Em Repository name, coloque um nome (ex: totem-hotel-ia).
+Marque como Public (Público).
+Marque a caixinha Add a README file.
+Role até o final e toque no botão verde Create repository.
+Crie o arquivo do Totem:
+Dentro do repositório recém-criado, toque no botão Add file ➔ Create new file.
+No campo do nome do arquivo (onde está piscando o cursor), digite exatamente:
+code
+Text
+index.html
+No campo de texto grande abaixo, cole todo o código HTML do Totem.
+Role até o final da página e toque no botão verde Commit changes... ➔ confirme tocando em Commit changes.
+Ative o link online grátis (GitHub Pages):
+No menu do seu repositório, toque na aba Settings (Configurações ⚙️).
+No menu lateral à esquerda, procure por Pages.
+Em Branch, mude de None para main (ou master) e mantenha a pasta / (root).
+Toque em Save (Salvar).
+Aguarde 1 a 2 minutinhos e atualize a página: o GitHub vai gerar o link do seu Totem no topo (ex: https://seu-usuario.github.io/totem-hotel-ia/).
+Opção 2: Subir o Projeto Completo com Todas as Pastas (Vite / React)
+Se você quiser guardar todos os arquivos da estrutura React/Node no GitHub pelo celular:
+Baixar os arquivos do projeto:
+No canto superior da tela do AI Studio, use o botão de exportar/baixar ZIP do código.
+Os arquivos ficarão salvos na pasta Downloads do seu celular.
+No GitHub pelo celular:
+Crie o repositório como no passo 2 acima.
+Toque em Add file ➔ Upload files.
+Toque em Choose your files e selecione os arquivos descompactados do projeto.
+Toque em Commit changes.
+💡 Dica Bônus para Celular
+Se você usa muito o celular para programar ou gerenciar repositórios, baixe o aplicativo oficial:
+GitHub Mobile (disponível na Google Play Store e na Apple App Store). Por lá você consegue gerenciar seus repositórios, ver commits e compartilhar links facilmente!
+Make changes, add new features, ask for anything
+
+
